@@ -1,0 +1,6 @@
+{
+  "name": "TraceChain",
+  "description": "TraceChain is a blockchain-based product lifecycle and traceability customer mobile app.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

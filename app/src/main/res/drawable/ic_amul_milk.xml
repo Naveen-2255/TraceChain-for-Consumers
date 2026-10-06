@@ -1,0 +1,64 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="76dp"
+    android:viewportWidth="64"
+    android:viewportHeight="76">
+    <!-- Carton Body -->
+    <path
+        android:fillColor="#E8F4FC"
+        android:pathData="M14,14 L50,14 L50,70 C50,72.2 48.2,74 46,74 L18,74 C15.8,74 14,72.2 14,70 Z" />
+
+    <!-- Carton Gable Top -->
+    <path
+        android:fillColor="#0D6BAE"
+        android:pathData="M14,14 L32,6 L50,14 Z" />
+    <path
+        android:fillColor="#084E82"
+        android:pathData="M24,6 L40,6 L38,2 L26,2 Z" />
+
+    <!-- Blue Top Banner -->
+    <path
+        android:fillColor="#0E77C1"
+        android:pathData="M14,14 L50,14 L50,28 L14,28 Z" />
+
+    <!-- Red Amul Logo text plate -->
+    <path
+        android:fillColor="#D8232A"
+        android:pathData="M20,18 L44,18 L44,24 L20,24 Z" />
+    <!-- White inner logo line -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,20 L27,20 L27,22 L24,22 Z M29,20 L35,20 L35,22 L29,22 Z M37,20 L40,20 L40,22 L37,22 Z" />
+
+    <!-- Yellow Taaza sub-banner -->
+    <path
+        android:fillColor="#F6B819"
+        android:pathData="M22,29 L42,29 L42,33 L22,33 Z" />
+
+    <!-- Blue decorative side wave -->
+    <path
+        android:fillColor="#2196F3"
+        android:pathData="M14,40 C20,38 24,42 30,40 C36,38 42,42 50,40 L50,70 C48,72 16,72 14,70 Z" />
+
+    <!-- Iconic Amul Girl stylized silhouette -->
+    <!-- Hair -->
+    <path
+        android:fillColor="#152636"
+        android:pathData="M32,44 C28,44 26,48 27,51 C27,51 28,48 32,48 C36,48 37,51 37,51 C38,48 36,44 32,44 Z" />
+    <!-- Face -->
+    <path
+        android:fillColor="#FCD6B5"
+        android:pathData="M28,48 C28,52 36,52 36,48 C36,46 28,46 28,48 Z" />
+    <!-- Polka dot dress -->
+    <path
+        android:fillColor="#E53935"
+        android:pathData="M26,53 L38,53 L41,66 L23,66 Z" />
+    <!-- White polka dots -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,56 C28,55 30,55 30,56 C30,57 28,57 28,56 Z M34,56 C34,55 36,55 36,56 C36,57 34,57 34,56 Z M31,61 C31,60 33,60 33,61 C33,62 31,62 31,61 Z" />
+    <!-- Blue 1L Text badge at bottom -->
+    <path
+        android:fillColor="#0D6BAE"
+        android:pathData="M26,68 L38,68 L38,72 L26,72 Z" />
+</vector>

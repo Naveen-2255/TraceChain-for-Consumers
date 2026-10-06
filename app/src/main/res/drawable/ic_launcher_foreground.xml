@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Outer Shield / Hexagon Shape in subtle Emerald -->
+    <path
+        android:fillColor="#15825F"
+        android:pathData="M54,26 L76,36 L76,58 C76,71.5 66.5,80.5 54,84 C41.5,80.5 32,71.5 32,58 L32,36 Z" />
+
+    <!-- Inner Shield border accent -->
+    <path
+        android:fillColor="#0B6E4F"
+        android:pathData="M54,30 L72,38 L72,57 C72,68.5 64.5,76 54,79 C43.5,76 36,68.5 36,57 L36,38 Z" />
+
+    <!-- Chain links with verified check in Emerald #5DD39E -->
+    <path
+        android:fillColor="#5DD39E"
+        android:pathData="M54,42 C49,42 45,46 45,51 C45,53.2 45.8,55.2 47.1,56.7 L50,53.8 C49.4,53 49,52 49,51 C49,48.2 51.2,46 54,46 C56.8,46 59,48.2 59,51 C59,52 58.6,53 58,53.8 L60.9,56.7 C62.2,55.2 63,53.2 63,51 C63,46 59,42 54,42 Z" />
+
+    <!-- Checkmark inside shield -->
+    <path
+        android:fillColor="#FAFDF6"
+        android:pathData="M51.5,63.5 L46,58 L43.5,60.5 L51.5,68.5 L66.5,53.5 L64,51 Z" />
+</vector>

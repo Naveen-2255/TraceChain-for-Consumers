@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="60dp"
+    android:viewportWidth="80"
+    android:viewportHeight="60">
+
+    <!-- Route Arc from Pin to Box to Truck in Almond Cream & Olive -->
+    <path
+        android:strokeColor="#8B9565"
+        android:strokeWidth="1.4"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M58,18 C46,16 34,22 30,34 C26,46 42,50 50,52" />
+    <path
+        android:fillColor="#6B734A"
+        android:pathData="M48,18m-1.2,0a1.2,1.2 0,1,1 2.4,0a1.2,1.2 0,1,1 -2.4,0" />
+    <path
+        android:fillColor="#6B734A"
+        android:pathData="M38,24m-1.2,0a1.2,1.2 0,1,1 2.4,0a1.2,1.2 0,1,1 -2.4,0" />
+    <path
+        android:fillColor="#6B734A"
+        android:pathData="M32,32m-1.2,0a1.2,1.2 0,1,1 2.4,0a1.2,1.2 0,1,1 -2.4,0" />
+
+    <!-- Map Location Pin (Top Right) in Dusty Olive (#6B734A) -->
+    <path
+        android:fillColor="#6B734A"
+        android:pathData="M58,6 C54.7,6 52,8.7 52,12 C52,16.5 58,22 58,22 C58,22 64,16.5 64,12 C64,8.7 61.3,6 58,6 Z" />
+    <path
+        android:fillColor="#F6F2EA"
+        android:pathData="M58,12m-2,0a2,2 0,1,1 4,0a2,2 0,1,1 -4,0" />
+
+    <!-- Isometric Package Box (Lower Left) in Dusty Olive (#6B734A) & Dark Coffee (#3E2B22) -->
+    <!-- Top Face -->
+    <path
+        android:fillColor="#8B9565"
+        android:pathData="M16,36 L28,30 L40,36 L28,42 Z" />
+    <!-- Left Face in Dusty Olive (#6B734A) -->
+    <path
+        android:fillColor="#6B734A"
+        android:pathData="M16,36 L28,42 L28,56 L16,50 Z" />
+    <!-- Right Face in Dark Coffee (#3E2B22) -->
+    <path
+        android:fillColor="#3E2B22"
+        android:pathData="M28,42 L40,36 L40,50 L28,56 Z" />
+    <!-- Box Tape Stripe in Almond Cream (#EADDD0) -->
+    <path
+        android:fillColor="#EADDD0"
+        android:pathData="M26,31 L30,29 L30,43 L26,45 Z" />
+
+    <!-- Delivery Truck (Lower Right) in Dusty Olive & Almond Cream -->
+    <!-- Cargo Box in Dusty Olive (#6B734A) -->
+    <path
+        android:fillColor="#6B734A"
+        android:pathData="M56,40 H68 V52 H56 Z" />
+    <!-- Cabin in Dark Coffee (#3E2B22) -->
+    <path
+        android:fillColor="#3E2B22"
+        android:pathData="M68,44 H74 L76,48 V52 H68 Z" />
+    <!-- Cabin Window in Floral White (#F6F2EA) -->
+    <path
+        android:fillColor="#F6F2EA"
+        android:pathData="M69,45 H73 L74,48 H69 Z" />
+    <!-- Wheels in Pitch Black (#1B1713) -->
+    <path
+        android:fillColor="#1B1713"
+        android:pathData="M59,52 A2.5,2.5 0 0,0 64,52 Z" />
+    <path
+        android:fillColor="#1B1713"
+        android:pathData="M70,52 A2.5,2.5 0 0,0 75,52 Z" />
+</vector>

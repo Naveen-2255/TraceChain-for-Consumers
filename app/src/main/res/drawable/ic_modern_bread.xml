@@ -1,0 +1,43 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="76dp"
+    android:viewportWidth="64"
+    android:viewportHeight="76">
+    <!-- Bread Bag Body (Yellow / Golden) -->
+    <path
+        android:fillColor="#FFC82C"
+        android:pathData="M12,18 L52,18 C54.2,18 56,19.8 56,22 L56,68 C56,71.3 53.3,74 50,74 L14,74 C10.7,74 8,71.3 8,68 L8,22 C8,19.8 9.8,18 12,18 Z" />
+
+    <!-- Top Gather / Twist Tie -->
+    <path
+        android:fillColor="#E5A608"
+        android:pathData="M24,18 L40,18 L44,10 L20,10 Z" />
+    <path
+        android:fillColor="#D8232A"
+        android:pathData="M26,14 L38,14 L37,12 L27,12 Z" />
+
+    <!-- Red Diagonal Brand Ribbon / Header -->
+    <path
+        android:fillColor="#E1251B"
+        android:pathData="M8,30 L56,24 L56,42 L8,48 Z" />
+
+    <!-- Modern White Bread Typography block -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M14,33 L24,32 L23,38 L13,39 Z M26,31 L48,28 L47,34 L25,37 Z" />
+
+    <!-- White Bread Sub-plate -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,50 L52,46 L52,58 L12,62 Z" />
+
+    <!-- Brown Bread Loaf Slices silhouette seen through window -->
+    <path
+        android:fillColor="#8D5524"
+        android:pathData="M18,52 L46,49 L46,55 L18,58 Z" />
+
+    <!-- Modern blue badge -->
+    <path
+        android:fillColor="#1B4F9B"
+        android:pathData="M12,66 L26,66 L26,71 L12,71 Z" />
+</vector>
