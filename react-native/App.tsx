@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, StatusBar, SafeAreaView } from 'react-native';
+import { View, StyleSheet, StatusBar } from 'react-native';
 import { BottomNavBar, NavTab } from './src/components/BottomNavBar';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { ScanScreen } from './src/screens/ScanScreen';
@@ -70,13 +70,11 @@ export default function App() {
         />
       )}
 
-      {/* Concentric Cradled Bottom Navigation Bar */}
-      {currentTab !== 'scan' && (
-        <BottomNavBar
-          currentTab={currentTab}
-          onTabSelect={(tab) => setCurrentTab(tab)}
-        />
-      )}
+      {/* Concentric Cradled Bottom Navigation Bar - ALWAYS VISIBLE on all 3 tabs */}
+      <BottomNavBar
+        currentTab={currentTab}
+        onTabSelect={(tab) => setCurrentTab(tab)}
+      />
     </View>
   );
 }

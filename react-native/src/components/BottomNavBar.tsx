@@ -25,35 +25,39 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   currentTab,
   onTabSelect,
 }) => {
-  // Animation values
-  const scanLaserAnim = useRef(new Animated.Value(0)).current;
+  // Animation drivers
+  const scanUpDownAnim = useRef(new Animated.Value(0)).current;
   const historyRotateAnim = useRef(new Animated.Value(0)).current;
-  const homePulseAnim = useRef(new Animated.Value(1)).current;
+  const homeScaleAnim = useRef(new Animated.Value(1)).current;
 
-  // 1. Scan animation: Up-and-down scanning laser / bouncing scan effect
+  // 1. Scan animation: Up-and-down oscillating movement and scanning beam
   useEffect(() => {
     let scanLoop: Animated.CompositeAnimation | null = null;
     if (currentTab === 'scan') {
-      scanLaserAnim.setValue(0);
+      scanUpDownAnim.setValue(0);
       scanLoop = Animated.loop(
         Animated.sequence([
-          Animated.timing(scanLaserAnim, {
+          Animated.timing(scanUpDownAnim, {
             toValue: 1,
-            duration: 850,
-            easing: Easing.inOut(Easing.ease),
+            duration: 750,
+            easing: Easing.inOut(Easing.quad),
             useNativeDriver: true,
           }),
-          Animated.timing(scanLaserAnim, {
+          Animated.timing(scanUpDownAnim, {
             toValue: 0,
-            duration: 850,
-            easing: Easing.inOut(Easing.ease),
+            duration: 750,
+            easing: Easing.inOut(Easing.quad),
             useNativeDriver: true,
           }),
         ])
       );
       scanLoop.start();
     } else {
-      scanLaserAnim.setValue(0);
+      Animated.timing(scanUpDownAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
     }
 
     return () => {
@@ -61,7 +65,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
     };
   }, [currentTab]);
 
-  // 2. History animation: Continuous circular rotation
+  // 2. History animation: Continuous 360-degree rotation of the history circle
   useEffect(() => {
     let historyLoop: Animated.CompositeAnimation | null = null;
     if (currentTab === 'history') {
@@ -69,7 +73,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
       historyLoop = Animated.loop(
         Animated.timing(historyRotateAnim, {
           toValue: 1,
-          duration: 2400,
+          duration: 2000,
           easing: Easing.linear,
           useNativeDriver: true,
         })
@@ -91,17 +95,17 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   // 3. Home bounce when selected
   useEffect(() => {
     if (currentTab === 'home') {
-      homePulseAnim.setValue(0.92);
-      Animated.spring(homePulseAnim, {
+      homeScaleAnim.setValue(0.92);
+      Animated.spring(homeScaleAnim, {
         toValue: 1,
         friction: 4,
-        tension: 50,
+        tension: 60,
         useNativeDriver: true,
       }).start();
     }
   }, [currentTab]);
 
-  // Cradle is permanently anchored in the center (NO circle transfer)
+  // Geometry: Permanently centered cradle notch (NO transfer)
   const topY = 32;
   const cornerR = 20;
   const btnDiameter = 60;
@@ -141,18 +145,18 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
     Z
   `;
 
-  // Interpolations for Scan animation
-  const scanLaserTranslateY = scanLaserAnim.interpolate({
+  // Interpolations for Scan animation: prominent up-and-down motion
+  const scanIconTranslateY = scanUpDownAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-9, 9],
+    outputRange: [-6, 6],
   });
 
-  const scanIconBounce = scanLaserAnim.interpolate({
+  const scanLaserTranslateY = scanUpDownAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-3, 3],
+    outputRange: [-12, 12],
   });
 
-  // Interpolations for History rotation
+  // Interpolations for History rotation: smooth 360-degree rotation
   const historyRotation = historyRotateAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
@@ -169,7 +173,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
       </Svg>
 
       <View style={styles.row}>
-        {/* TAB 1: SCAN (Up and down laser / scanning animation) */}
+        {/* TAB 1: SCAN (Up-and-Down bouncing & laser scanning animation, NO circle transfer) */}
         <TouchableOpacity
           style={styles.tabItem}
           activeOpacity={0.8}
@@ -178,18 +182,18 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           <View style={styles.sideIconWrap}>
             <Animated.View
               style={{
-                transform: [{ translateY: isScanSelected ? scanIconBounce : 0 }],
+                transform: [{ translateY: isScanSelected ? scanIconTranslateY : 0 }],
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
               <MaterialCommunityIcons
                 name="qrcode-scan"
-                size={26}
+                size={27}
                 color={isScanSelected ? Colors.activeCircle : Colors.inactiveIcon}
               />
 
-              {/* Laser scanning line sweeping up and down */}
+              {/* Up-and-down laser scanning beam */}
               {isScanSelected && (
                 <Animated.View
                   style={[
@@ -205,7 +209,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           </Text>
         </TouchableOpacity>
 
-        {/* TAB 2: HOME (Anchored in permanent concentric cradle, no transfer) */}
+        {/* TAB 2: HOME (Fixed in permanent concentric cradle, NEVER transfers) */}
         <TouchableOpacity
           style={styles.centerTabItem}
           activeOpacity={0.85}
@@ -215,7 +219,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
             style={[
               styles.centerCircle,
               isHomeSelected && styles.activeCenterCircle,
-              { transform: [{ scale: isHomeSelected ? homePulseAnim : 1 }] },
+              { transform: [{ scale: isHomeSelected ? homeScaleAnim : 1 }] },
             ]}
           >
             <MaterialCommunityIcons
@@ -229,7 +233,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           </Text>
         </TouchableOpacity>
 
-        {/* TAB 3: HISTORY (Rotating circle/clock animation) */}
+        {/* TAB 3: HISTORY (Continuous circular rotation animation, NO circle transfer) */}
         <TouchableOpacity
           style={styles.tabItem}
           activeOpacity={0.8}
@@ -245,7 +249,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
             >
               <MaterialCommunityIcons
                 name="history"
-                size={27}
+                size={28}
                 color={isHistorySelected ? Colors.activeCircle : Colors.inactiveIcon}
               />
             </Animated.View>
@@ -282,31 +286,31 @@ const styles = StyleSheet.create({
   },
   sideIconWrap: {
     marginTop: 44,
-    width: 32,
-    height: 32,
+    width: 34,
+    height: 34,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
   },
   scanLaserBeam: {
     position: 'absolute',
-    width: 24,
-    height: 2,
+    width: 26,
+    height: 2.5,
     backgroundColor: Colors.activeCircle,
     shadowColor: Colors.activeCircle,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.95,
+    shadowRadius: 5,
+    elevation: 4,
   },
   centerCircle: {
     marginTop: 6,
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: 'rgba(246, 242, 234, 0.25)',
+    backgroundColor: 'rgba(246, 242, 234, 0.22)',
     borderWidth: 1.5,
-    borderColor: 'rgba(234, 221, 208, 0.4)',
+    borderColor: 'rgba(234, 221, 208, 0.35)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -315,7 +319,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.activeCircle,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.28,
+    shadowOpacity: 0.3,
     shadowRadius: 7,
     elevation: 8,
   },

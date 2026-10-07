@@ -146,26 +146,26 @@ fun AppBottomNavigation(
                 drawPath(path = path, color = DarkEmerald)
             }
     ) {
-        // Animation transitions
+        // Continuous animation transitions
         val infiniteTransition = rememberInfiniteTransition(label = "nav_animations")
 
-        // 1. Scan animation: up-and-down laser scanning beam
+        // 1. Scan animation: Up-and-down oscillation and laser scanning beam
         val scanLaserOffset by infiniteTransition.animateFloat(
-            initialValue = -8f,
-            targetValue = 8f,
+            initialValue = -10f,
+            targetValue = 10f,
             animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 850, easing = FastOutSlowInEasing),
+                animation = tween(durationMillis = 750, easing = FastOutSlowInEasing),
                 repeatMode = RepeatMode.Reverse
             ),
             label = "scan_laser_anim"
         )
 
-        // 2. History animation: continuous rotation
+        // 2. History animation: Continuous 360-degree rotation
         val historyRotation by infiniteTransition.animateFloat(
             initialValue = 0f,
             targetValue = 360f,
             animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 2400, easing = LinearEasing),
+                animation = tween(durationMillis = 2000, easing = LinearEasing),
                 repeatMode = RepeatMode.Restart
             ),
             label = "history_rotation_anim"
@@ -178,7 +178,7 @@ fun AppBottomNavigation(
                 .height(98.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // TAB 1: SCAN (Up-and-down laser scanning animation, no circle transfer)
+            // TAB 1: SCAN (Up-and-down laser scanning animation, NO circle transfer)
             val isScanSelected = currentTab == NavTab.SCAN
             Box(
                 modifier = Modifier
@@ -195,7 +195,7 @@ fun AppBottomNavigation(
                 Box(
                     modifier = Modifier
                         .offset(y = 44.dp)
-                        .size(32.dp),
+                        .size(34.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -203,16 +203,17 @@ fun AppBottomNavigation(
                         contentDescription = "Scan",
                         tint = if (isScanSelected) MintActivePill else FloralWhite,
                         modifier = Modifier
-                            .size(26.dp)
-                            .offset(y = if (isScanSelected) (scanLaserOffset * 0.35f).dp else 0.dp)
+                            .size(27.dp)
+                            .offset(y = if (isScanSelected) (scanLaserOffset * 0.5f).dp else 0.dp)
                     )
 
-                    // Up-and-down laser beam
+                    // Visible up-and-down scanning laser beam
                     if (isScanSelected) {
                         Box(
                             modifier = Modifier
                                 .offset(y = scanLaserOffset.dp)
-                                .size(width = 24.dp, height = 2.dp)
+                                .size(width = 26.dp, height = 2.5.dp)
+                                .clip(CircleShape)
                                 .background(MintActivePill)
                         )
                     }
@@ -272,7 +273,7 @@ fun AppBottomNavigation(
                 )
             }
 
-            // TAB 3: HISTORY (Continuous circular rotation animation, no circle transfer)
+            // TAB 3: HISTORY (Continuous circular rotation animation, NO circle transfer)
             val isHistorySelected = currentTab == NavTab.HISTORY
             Box(
                 modifier = Modifier
@@ -289,7 +290,7 @@ fun AppBottomNavigation(
                 Box(
                     modifier = Modifier
                         .offset(y = 44.dp)
-                        .size(32.dp),
+                        .size(34.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -297,7 +298,7 @@ fun AppBottomNavigation(
                         contentDescription = "History",
                         tint = if (isHistorySelected) MintActivePill else FloralWhite,
                         modifier = Modifier
-                            .size(26.dp)
+                            .size(28.dp)
                             .rotate(if (isHistorySelected) historyRotation else 0f)
                     )
                 }
