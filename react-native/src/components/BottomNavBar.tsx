@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  Animated,
+  Easing,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -23,13 +25,83 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   currentTab,
   onTabSelect,
 }) => {
-  const tabs: { key: NavTab; label: string; icon: string }[] = [
-    { key: 'scan', label: 'Scan', icon: 'qrcode-scan' },
-    { key: 'home', label: 'Home', icon: 'home' },
-    { key: 'history', label: 'History', icon: 'history' },
-  ];
+  // Animation values
+  const scanLaserAnim = useRef(new Animated.Value(0)).current;
+  const historyRotateAnim = useRef(new Animated.Value(0)).current;
+  const homePulseAnim = useRef(new Animated.Value(1)).current;
 
-  // Concentric circular cradle geometry matching the native implementation
+  // 1. Scan animation: Up-and-down scanning laser / bouncing scan effect
+  useEffect(() => {
+    let scanLoop: Animated.CompositeAnimation | null = null;
+    if (currentTab === 'scan') {
+      scanLaserAnim.setValue(0);
+      scanLoop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(scanLaserAnim, {
+            toValue: 1,
+            duration: 850,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(scanLaserAnim, {
+            toValue: 0,
+            duration: 850,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      scanLoop.start();
+    } else {
+      scanLaserAnim.setValue(0);
+    }
+
+    return () => {
+      if (scanLoop) scanLoop.stop();
+    };
+  }, [currentTab]);
+
+  // 2. History animation: Continuous circular rotation
+  useEffect(() => {
+    let historyLoop: Animated.CompositeAnimation | null = null;
+    if (currentTab === 'history') {
+      historyRotateAnim.setValue(0);
+      historyLoop = Animated.loop(
+        Animated.timing(historyRotateAnim, {
+          toValue: 1,
+          duration: 2400,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      );
+      historyLoop.start();
+    } else {
+      Animated.timing(historyRotateAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+
+    return () => {
+      if (historyLoop) historyLoop.stop();
+    };
+  }, [currentTab]);
+
+  // 3. Home bounce when selected
+  useEffect(() => {
+    if (currentTab === 'home') {
+      homePulseAnim.setValue(0.92);
+      Animated.spring(homePulseAnim, {
+        toValue: 1,
+        friction: 4,
+        tension: 50,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [currentTab]);
+
+  // Cradle is permanently anchored in the center (NO circle transfer)
   const topY = 32;
   const cornerR = 20;
   const btnDiameter = 60;
@@ -43,11 +115,9 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   const sumR = rCradle + rShoulder; // 50
   const deltaX = Math.sqrt(sumR * sumR - deltaY * deltaY); // ~48.99
 
-  const activeIndex = tabs.findIndex((t) => t.key === currentTab);
-  const targetFraction = (activeIndex * 2 + 1) / (tabs.length * 2);
-  const cx = SCREEN_WIDTH * targetFraction;
+  // Anchor cradle strictly at center
+  const cx = SCREEN_WIDTH * 0.5;
 
-  // The 5 key junction points for the exact circular arc cradle
   const p0x = cx - deltaX;
   const p0y = topY;
   const p1x = cx - rCradle * (deltaX / sumR);
@@ -57,7 +127,6 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   const p4x = cx + deltaX;
   const p4y = topY;
 
-  // Concentric SVG path
   const navBarPath = `
     M 0 ${topY + cornerR}
     Q 0 ${topY} ${cornerR} ${topY}
@@ -72,6 +141,27 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
     Z
   `;
 
+  // Interpolations for Scan animation
+  const scanLaserTranslateY = scanLaserAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-9, 9],
+  });
+
+  const scanIconBounce = scanLaserAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-3, 3],
+  });
+
+  // Interpolations for History rotation
+  const historyRotation = historyRotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const isHomeSelected = currentTab === 'home';
+  const isScanSelected = currentTab === 'scan';
+  const isHistorySelected = currentTab === 'history';
+
   return (
     <View style={styles.container}>
       <Svg width={SCREEN_WIDTH} height={120} style={StyleSheet.absoluteFill}>
@@ -79,40 +169,91 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
       </Svg>
 
       <View style={styles.row}>
-        {tabs.map((tab) => {
-          const isSelected = currentTab === tab.key;
-
-          return (
-            <TouchableOpacity
-              key={tab.key}
-              style={styles.tabItem}
-              activeOpacity={0.85}
-              onPress={() => onTabSelect(tab.key)}
+        {/* TAB 1: SCAN (Up and down laser / scanning animation) */}
+        <TouchableOpacity
+          style={styles.tabItem}
+          activeOpacity={0.8}
+          onPress={() => onTabSelect('scan')}
+        >
+          <View style={styles.sideIconWrap}>
+            <Animated.View
+              style={{
+                transform: [{ translateY: isScanSelected ? scanIconBounce : 0 }],
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
-              <View
-                style={[
-                  styles.iconWrap,
-                  isSelected && styles.activeIconCircle,
-                ]}
-              >
-                <MaterialCommunityIcons
-                  name={tab.icon as any}
-                  size={isSelected ? 30 : 24}
-                  color={isSelected ? Colors.activeIcon : Colors.inactiveIcon}
-                />
-              </View>
+              <MaterialCommunityIcons
+                name="qrcode-scan"
+                size={26}
+                color={isScanSelected ? Colors.activeCircle : Colors.inactiveIcon}
+              />
 
-              <Text
-                style={[
-                  styles.label,
-                  isSelected && styles.activeLabel,
-                ]}
-              >
-                {tab.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+              {/* Laser scanning line sweeping up and down */}
+              {isScanSelected && (
+                <Animated.View
+                  style={[
+                    styles.scanLaserBeam,
+                    { transform: [{ translateY: scanLaserTranslateY }] },
+                  ]}
+                />
+              )}
+            </Animated.View>
+          </View>
+          <Text style={[styles.label, isScanSelected && styles.activeLabel]}>
+            Scan
+          </Text>
+        </TouchableOpacity>
+
+        {/* TAB 2: HOME (Anchored in permanent concentric cradle, no transfer) */}
+        <TouchableOpacity
+          style={styles.centerTabItem}
+          activeOpacity={0.85}
+          onPress={() => onTabSelect('home')}
+        >
+          <Animated.View
+            style={[
+              styles.centerCircle,
+              isHomeSelected && styles.activeCenterCircle,
+              { transform: [{ scale: isHomeSelected ? homePulseAnim : 1 }] },
+            ]}
+          >
+            <MaterialCommunityIcons
+              name="home"
+              size={30}
+              color={isHomeSelected ? Colors.activeIcon : Colors.inactiveIcon}
+            />
+          </Animated.View>
+          <Text style={[styles.centerLabel, isHomeSelected && styles.activeLabel]}>
+            Home
+          </Text>
+        </TouchableOpacity>
+
+        {/* TAB 3: HISTORY (Rotating circle/clock animation) */}
+        <TouchableOpacity
+          style={styles.tabItem}
+          activeOpacity={0.8}
+          onPress={() => onTabSelect('history')}
+        >
+          <View style={styles.sideIconWrap}>
+            <Animated.View
+              style={{
+                transform: [{ rotate: isHistorySelected ? historyRotation : '0deg' }],
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <MaterialCommunityIcons
+                name="history"
+                size={27}
+                color={isHistorySelected ? Colors.activeCircle : Colors.inactiveIcon}
+              />
+            </Animated.View>
+          </View>
+          <Text style={[styles.label, isHistorySelected && styles.activeLabel]}>
+            History
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -132,28 +273,60 @@ const styles = StyleSheet.create({
   tabItem: {
     flex: 1,
     alignItems: 'center',
-    position: 'relative',
+    justifyContent: 'flex-start',
   },
-  iconWrap: {
-    marginTop: 42,
-    width: 36,
-    height: 36,
+  centerTabItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  sideIconWrap: {
+    marginTop: 44,
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
   },
-  activeIconCircle: {
+  scanLaserBeam: {
+    position: 'absolute',
+    width: 24,
+    height: 2,
+    backgroundColor: Colors.activeCircle,
+    shadowColor: Colors.activeCircle,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  centerCircle: {
     marginTop: 6,
     width: 60,
     height: 60,
     borderRadius: 30,
+    backgroundColor: 'rgba(246, 242, 234, 0.25)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(234, 221, 208, 0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  activeCenterCircle: {
     backgroundColor: Colors.activeCircle,
+    borderColor: Colors.activeCircle,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.28,
+    shadowRadius: 7,
     elevation: 8,
   },
   label: {
+    position: 'absolute',
+    top: 74,
+    fontSize: 12,
+    color: Colors.inactiveIcon,
+    fontWeight: '400',
+  },
+  centerLabel: {
     position: 'absolute',
     top: 74,
     fontSize: 12,
