@@ -12,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -149,15 +150,25 @@ fun AppBottomNavigation(
         // Continuous animation transitions
         val infiniteTransition = rememberInfiniteTransition(label = "nav_animations")
 
-        // 1. Scan animation: Up-and-down oscillation and laser scanning beam
+        // 1. Scan animation: Up-and-down laser scanning beam & bounce
         val scanLaserOffset by infiniteTransition.animateFloat(
-            initialValue = -10f,
-            targetValue = 10f,
+            initialValue = -12f,
+            targetValue = 12f,
             animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 750, easing = FastOutSlowInEasing),
+                animation = tween(durationMillis = 700, easing = FastOutSlowInEasing),
                 repeatMode = RepeatMode.Reverse
             ),
             label = "scan_laser_anim"
+        )
+
+        val scanBounce by infiniteTransition.animateFloat(
+            initialValue = -5f,
+            targetValue = 5f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 700, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "scan_bounce_anim"
         )
 
         // 2. History animation: Continuous 360-degree rotation
@@ -165,7 +176,7 @@ fun AppBottomNavigation(
             initialValue = 0f,
             targetValue = 360f,
             animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 2000, easing = LinearEasing),
+                animation = tween(durationMillis = 1800, easing = LinearEasing),
                 repeatMode = RepeatMode.Restart
             ),
             label = "history_rotation_anim"
@@ -183,6 +194,7 @@ fun AppBottomNavigation(
             Box(
                 modifier = Modifier
                     .weight(1f)
+                    .fillMaxHeight()
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -195,7 +207,7 @@ fun AppBottomNavigation(
                 Box(
                     modifier = Modifier
                         .offset(y = 44.dp)
-                        .size(34.dp),
+                        .size(36.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -203,8 +215,8 @@ fun AppBottomNavigation(
                         contentDescription = "Scan",
                         tint = if (isScanSelected) MintActivePill else FloralWhite,
                         modifier = Modifier
-                            .size(27.dp)
-                            .offset(y = if (isScanSelected) (scanLaserOffset * 0.5f).dp else 0.dp)
+                            .size(28.dp)
+                            .offset(y = if (isScanSelected) scanBounce.dp else 0.dp)
                     )
 
                     // Visible up-and-down scanning laser beam
@@ -212,7 +224,7 @@ fun AppBottomNavigation(
                         Box(
                             modifier = Modifier
                                 .offset(y = scanLaserOffset.dp)
-                                .size(width = 26.dp, height = 2.5.dp)
+                                .size(width = 28.dp, height = 2.5.dp)
                                 .clip(CircleShape)
                                 .background(MintActivePill)
                         )
@@ -233,6 +245,7 @@ fun AppBottomNavigation(
             Box(
                 modifier = Modifier
                     .weight(1f)
+                    .fillMaxHeight()
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -278,6 +291,7 @@ fun AppBottomNavigation(
             Box(
                 modifier = Modifier
                     .weight(1f)
+                    .fillMaxHeight()
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -290,7 +304,7 @@ fun AppBottomNavigation(
                 Box(
                     modifier = Modifier
                         .offset(y = 44.dp)
-                        .size(34.dp),
+                        .size(36.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
