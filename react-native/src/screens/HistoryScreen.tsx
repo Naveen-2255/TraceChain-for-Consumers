@@ -1,53 +1,61 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '../theme/colors';
+import { Product, PRODUCTS_DATABASE } from '../data/productData';
 
-const historyItems = [
+interface HistoryScreenProps {
+  onProductSelect: (product: Product) => void;
+}
+
+const historyList = [
   {
-    id: '1',
-    name: 'Amul Taaza Milk',
-    batch: '#AM202409',
-    time: '2 hours ago',
-    icon: 'bottle-tonic-outline',
+    ...PRODUCTS_DATABASE['AM202409'],
+    verifiedAgo: '2 hours ago',
   },
   {
-    id: '2',
-    name: 'Modern Whole Wheat Bread',
-    batch: '#MDN202409',
-    time: 'Yesterday',
-    icon: 'bread-slice-outline',
+    ...PRODUCTS_DATABASE['MDN202409'],
+    verifiedAgo: 'Yesterday',
   },
   {
-    id: '3',
-    name: 'Organic Wildflower Honey',
-    batch: '#HNY202408',
-    time: '3 days ago',
-    icon: 'flower-outline',
+    ...PRODUCTS_DATABASE['HNY202408'],
+    verifiedAgo: '3 days ago',
   },
 ];
 
-export const HistoryScreen: React.FC = () => {
+export const HistoryScreen: React.FC<HistoryScreenProps> = ({ onProductSelect }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Verification History</Text>
-      <Text style={styles.subtitle}>Immutable blockchain audit trail</Text>
+      <Text style={styles.subtitle}>Cryptographically sealed supply chain records</Text>
 
       <FlatList
-        data={historyItems}
+        data={historyList}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <TouchableOpacity
+            style={styles.card}
+            activeOpacity={0.8}
+            onPress={() => onProductSelect(item)}
+          >
             <View style={styles.iconCircle}>
-              <MaterialCommunityIcons name={item.icon as any} size={24} color={Colors.dustyOlive} />
+              <MaterialCommunityIcons
+                name={item.imageIcon as any}
+                size={26}
+                color={Colors.dustyOlive}
+              />
             </View>
             <View style={{ flex: 1, marginLeft: 14 }}>
               <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemMeta}>Batch {item.batch} • {item.time}</Text>
+              <Text style={styles.itemMeta}>Batch #{item.batchNumber} • {item.verifiedAgo}</Text>
             </View>
-            <MaterialCommunityIcons name="check-decagram" size={20} color={Colors.badgeVerifiedText} />
-          </View>
+            <View style={styles.verifiedBadge}>
+              <MaterialCommunityIcons name="shield-check" size={14} color={Colors.badgeVerifiedText} />
+              <Text style={styles.badgeText}>Verified</Text>
+            </View>
+          </TouchableOpacity>
         )}
       />
     </View>
@@ -67,7 +75,7 @@ const styles = StyleSheet.create({
     color: Colors.pitchBlack,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 13.5,
     color: Colors.textSecondary,
     marginTop: 4,
     marginBottom: 20,
@@ -77,15 +85,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFF',
     padding: 14,
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: Colors.cardBorder,
-    marginBottom: 10,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
   iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 48,
+    height: 48,
+    borderRadius: 14,
     backgroundColor: Colors.floralWhite,
     alignItems: 'center',
     justifyContent: 'center',
@@ -98,6 +111,20 @@ const styles = StyleSheet.create({
   itemMeta: {
     fontSize: 12,
     color: Colors.textSecondary,
-    marginTop: 2,
+    marginTop: 3,
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.badgeVerifiedBg,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.badgeVerifiedText,
+    marginLeft: 3,
   },
 });
