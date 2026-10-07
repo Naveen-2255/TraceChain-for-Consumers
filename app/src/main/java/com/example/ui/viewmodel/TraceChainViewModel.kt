@@ -115,9 +115,9 @@ class TraceChainViewModel(application: Application) : AndroidViewModel(applicati
 
     fun selectNavTab(tab: NavTab) {
         when (tab) {
-            NavTab.SCAN -> navigateTo(Screen.Scan)
-            NavTab.HOME -> navigateTo(Screen.Home)
-            NavTab.HISTORY -> navigateTo(Screen.History)
+            NavTab.SCAN -> _screenStack.value = listOf(Screen.Home, Screen.Scan)
+            NavTab.HOME -> _screenStack.value = listOf(Screen.Home)
+            NavTab.HISTORY -> _screenStack.value = listOf(Screen.Home, Screen.History)
         }
     }
 

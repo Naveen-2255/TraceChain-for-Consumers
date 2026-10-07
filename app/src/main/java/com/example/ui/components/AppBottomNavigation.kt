@@ -1,7 +1,7 @@
 package com.example.ui.components
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -13,6 +13,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -147,10 +149,9 @@ fun AppBottomNavigation(
                 drawPath(path = path, color = DarkEmerald)
             }
     ) {
-        // Continuous animation transitions
         val infiniteTransition = rememberInfiniteTransition(label = "nav_animations")
 
-        // 1. Scan animation: Up-and-down laser scanning beam & bounce
+        // 1. Scan animation: Up-and-down laser scanning beam
         val scanLaserOffset by infiniteTransition.animateFloat(
             initialValue = -12f,
             targetValue = 12f,
@@ -162,8 +163,8 @@ fun AppBottomNavigation(
         )
 
         val scanBounce by infiniteTransition.animateFloat(
-            initialValue = -5f,
-            targetValue = 5f,
+            initialValue = -4f,
+            targetValue = 4f,
             animationSpec = infiniteRepeatable(
                 animation = tween(durationMillis = 700, easing = FastOutSlowInEasing),
                 repeatMode = RepeatMode.Reverse
@@ -171,16 +172,24 @@ fun AppBottomNavigation(
             label = "scan_bounce_anim"
         )
 
-        // 2. History animation: Continuous 360-degree rotation
-        val historyRotation by infiniteTransition.animateFloat(
-            initialValue = 0f,
-            targetValue = 360f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 1800, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart
-            ),
-            label = "history_rotation_anim"
-        )
+        // 2. History animation: EXACTLY ONE-TIME 360-degree rotation of ONLY the clock
+        val isHistorySelected = currentTab == NavTab.HISTORY
+        val historyClockRotation = remember { Animatable(0f) }
+
+        LaunchedEffect(isHistorySelected) {
+            if (isHistorySelected) {
+                historyClockRotation.snapTo(0f)
+                historyClockRotation.animateTo(
+                    targetValue = 360f,
+                    animationSpec = tween(
+                        durationMillis = 800,
+                        easing = FastOutSlowInEasing
+                    )
+                )
+            } else {
+                historyClockRotation.snapTo(0f)
+            }
+        }
 
         Row(
             modifier = Modifier
@@ -286,8 +295,7 @@ fun AppBottomNavigation(
                 )
             }
 
-            // TAB 3: HISTORY (Continuous circular rotation animation, NO circle transfer)
-            val isHistorySelected = currentTab == NavTab.HISTORY
+            // TAB 3: HISTORY (Stationary document, ONLY the clock in corner rotates 360° ONE TIME)
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -307,14 +315,33 @@ fun AppBottomNavigation(
                         .size(36.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_nav_history),
-                        contentDescription = "History",
-                        tint = if (isHistorySelected) MintActivePill else FloralWhite,
-                        modifier = Modifier
-                            .size(28.dp)
-                            .rotate(if (isHistorySelected) historyRotation else 0f)
-                    )
+                    Box(
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        // 1. Stationary Document outline (Never rotates)
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_history_doc),
+                            contentDescription = "History",
+                            tint = if (isHistorySelected) MintActivePill else FloralWhite,
+                            modifier = Modifier.fillMaxSize()
+                        )
+
+                        // 2. Clock in bottom right corner (Rotates 360 degrees ONE TIME when selected)
+                        Box(
+                            modifier = Modifier
+                                .offset(x = 13.dp, y = 13.dp)
+                                .size(14.dp)
+                                .rotate(historyClockRotation.value),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_nav_history_clock),
+                                contentDescription = null,
+                                tint = if (isHistorySelected) MintActivePill else FloralWhite,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
                 }
 
                 Text(

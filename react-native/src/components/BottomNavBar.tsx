@@ -30,7 +30,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   const historyRotateAnim = useRef(new Animated.Value(0)).current;
   const homeScaleAnim = useRef(new Animated.Value(1)).current;
 
-  // 1. Scan animation: Up-and-down oscillating movement and scanning beam
+  // 1. Scan animation: Up-and-down laser scanning beam
   useEffect(() => {
     let scanLoop: Animated.CompositeAnimation | null = null;
     if (currentTab === 'scan') {
@@ -65,31 +65,19 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
     };
   }, [currentTab]);
 
-  // 2. History animation: Continuous 360-degree rotation of the history circle
+  // 2. History animation: Rotates ONE TIME (360 degrees) when selected
   useEffect(() => {
-    let historyLoop: Animated.CompositeAnimation | null = null;
     if (currentTab === 'history') {
       historyRotateAnim.setValue(0);
-      historyLoop = Animated.loop(
-        Animated.timing(historyRotateAnim, {
-          toValue: 1,
-          duration: 2000,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        })
-      );
-      historyLoop.start();
-    } else {
       Animated.timing(historyRotateAnim, {
-        toValue: 0,
-        duration: 300,
+        toValue: 1,
+        duration: 750,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }).start();
+    } else {
+      historyRotateAnim.setValue(0);
     }
-
-    return () => {
-      if (historyLoop) historyLoop.stop();
-    };
   }, [currentTab]);
 
   // 3. Home bounce when selected
@@ -145,7 +133,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
     Z
   `;
 
-  // Interpolations for Scan animation: prominent up-and-down motion
+  // Interpolations for Scan animation
   const scanIconTranslateY = scanUpDownAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [-6, 6],
@@ -156,7 +144,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
     outputRange: [-12, 12],
   });
 
-  // Interpolations for History rotation: smooth 360-degree rotation
+  // Interpolations for History rotation (One-shot 0° to 360°)
   const historyRotation = historyRotateAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
@@ -173,7 +161,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
       </Svg>
 
       <View style={styles.row}>
-        {/* TAB 1: SCAN (Up-and-Down bouncing & laser scanning animation, NO circle transfer) */}
+        {/* TAB 1: SCAN (Up-and-down laser scanning animation, NO circle transfer) */}
         <TouchableOpacity
           style={styles.tabItem}
           activeOpacity={0.8}
@@ -233,26 +221,42 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           </Text>
         </TouchableOpacity>
 
-        {/* TAB 3: HISTORY (Continuous circular rotation animation, NO circle transfer) */}
+        {/* TAB 3: HISTORY (One-shot 360-degree rotation when selected, NO circle transfer) */}
         <TouchableOpacity
           style={styles.tabItem}
           activeOpacity={0.8}
           onPress={() => onTabSelect('history')}
         >
           <View style={styles.sideIconWrap}>
-            <Animated.View
-              style={{
-                transform: [{ rotate: isHistorySelected ? historyRotation : '0deg' }],
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
+            <View style={{ width: 28, height: 28, position: 'relative' }}>
+              {/* Stationary Document */}
               <MaterialCommunityIcons
-                name="history"
-                size={28}
+                name="file-document-outline"
+                size={26}
                 color={isHistorySelected ? Colors.activeCircle : Colors.inactiveIcon}
+                style={{ position: 'absolute', left: 0, top: 0 }}
               />
-            </Animated.View>
+
+              {/* Clock in bottom-right corner rotates 360° ONE TIME */}
+              <Animated.View
+                style={{
+                  position: 'absolute',
+                  right: -2,
+                  bottom: -2,
+                  width: 14,
+                  height: 14,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transform: [{ rotate: isHistorySelected ? historyRotation : '0deg' }],
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="clock-outline"
+                  size={14}
+                  color={isHistorySelected ? Colors.activeCircle : Colors.inactiveIcon}
+                />
+              </Animated.View>
+            </View>
           </View>
           <Text style={[styles.label, isHistorySelected && styles.activeLabel]}>
             History
@@ -276,11 +280,13 @@ const styles = StyleSheet.create({
   },
   tabItem: {
     flex: 1,
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
   centerTabItem: {
     flex: 1,
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
