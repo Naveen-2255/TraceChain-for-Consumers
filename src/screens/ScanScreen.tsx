@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   Dimensions,
   Platform,
+  Animated,
+  Easing,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -28,11 +30,31 @@ export const ScanScreen: React.FC<ScanScreenProps> = ({
   const [facing, setFacing] = useState<'back' | 'front'>('back');
   const [scanned, setScanned] = useState(false);
 
+  // One-time scanning sweep
+  const scanLineAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    scanLineAnim.setValue(0);
+    Animated.sequence([
+      Animated.timing(scanLineAnim, {
+        toValue: 230,
+        duration: 900,
+        easing: Easing.inOut(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(scanLineAnim, {
+        toValue: 0,
+        duration: 900,
+        easing: Easing.inOut(Easing.quad),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
   const handleBarcodeScanned = ({ data }: { type: string; data: string }) => {
     if (scanned) return;
     setScanned(true);
 
-    // Look up barcode in database or fallback to default
     const matchedProduct =
       PRODUCTS_DATABASE[data] ||
       Object.values(PRODUCTS_DATABASE).find(
@@ -77,31 +99,6 @@ export const ScanScreen: React.FC<ScanScreenProps> = ({
           <MaterialCommunityIcons name="camera-outline" size={20} color="#FFFFFF" />
           <Text style={styles.grantButtonText}>Grant Camera Permission</Text>
         </TouchableOpacity>
-
-        {/* Fallback instant demo testing */}
-        <View style={styles.demoSection}>
-          <Text style={styles.demoSectionTitle}>Or Test Without Camera:</Text>
-          <View style={styles.demoRow}>
-            <TouchableOpacity
-              style={styles.demoTag}
-              onPress={() => handleSimulateScan('AM202409')}
-            >
-              <Text style={styles.demoTagText}>Milk (AM202409)</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.demoTag}
-              onPress={() => handleSimulateScan('MDN202409')}
-            >
-              <Text style={styles.demoTagText}>Bread (MDN202409)</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.demoTag}
-              onPress={() => handleSimulateScan('HNY202408')}
-            >
-              <Text style={styles.demoTagText}>Honey (HNY202408)</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
       </View>
     );
   }
@@ -151,44 +148,25 @@ export const ScanScreen: React.FC<ScanScreenProps> = ({
 
           {/* Viewfinder Target Frame */}
           <View style={styles.viewfinderContainer}>
-            <View style={styles.viewfinderBox}>
+            <TouchableOpacity
+              style={styles.viewfinderBox}
+              activeOpacity={0.9}
+              onPress={() => handleSimulateScan('AM202409')}
+            >
               {/* 4 Corner Markers */}
               <View style={[styles.corner, styles.cornerTL]} />
               <View style={[styles.corner, styles.cornerTR]} />
               <View style={[styles.corner, styles.cornerBL]} />
               <View style={[styles.corner, styles.cornerBR]} />
 
-              {/* Animated laser line */}
-              <View style={styles.laserLine} />
-            </View>
-            <Text style={styles.instructionText}>
-              Align product QR code or barcode within frame
-            </Text>
-          </View>
-
-          {/* Quick Demo Test Buttons Bar at Bottom */}
-          <View style={styles.bottomBar}>
-            <Text style={styles.quickTestLabel}>Quick Test Barcodes:</Text>
-            <View style={styles.quickTestRow}>
-              <TouchableOpacity
-                style={styles.quickTestButton}
-                onPress={() => handleSimulateScan('AM202409')}
-              >
-                <Text style={styles.quickTestButtonText}>Amul Milk</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.quickTestButton}
-                onPress={() => handleSimulateScan('MDN202409')}
-              >
-                <Text style={styles.quickTestButtonText}>Modern Bread</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.quickTestButton}
-                onPress={() => handleSimulateScan('HNY202408')}
-              >
-                <Text style={styles.quickTestButtonText}>Wild Honey</Text>
-              </TouchableOpacity>
-            </View>
+              {/* Animated laser line (one-time sweep) */}
+              <Animated.View
+                style={[
+                  styles.laserLine,
+                  { transform: [{ translateY: scanLineAnim }] },
+                ]}
+              />
+            </TouchableOpacity>
           </View>
         </View>
       </CameraView>

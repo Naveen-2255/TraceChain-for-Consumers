@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -96,17 +97,13 @@ fun ScanScreen(
         }
     }
 
-    // Scanning line animation
-    val infiniteTransition = rememberInfiniteTransition(label = "scan_laser")
-    val scanLineOffset by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 220f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "scan_line_offset"
-    )
+    // One-time scanning line sweep
+    val scanLineOffset = remember { Animatable(0f) }
+    LaunchedEffect(Unit) {
+        scanLineOffset.snapTo(0f)
+        scanLineOffset.animateTo(220f, tween(1000, easing = FastOutSlowInEasing))
+        scanLineOffset.animateTo(0f, tween(1000, easing = FastOutSlowInEasing))
+    }
 
     Box(
         modifier = modifier
@@ -117,7 +114,6 @@ fun ScanScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .verticalScroll(rememberScrollState())
                 .padding(bottom = 110.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -158,15 +154,19 @@ fun ScanScreen(
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(36.dp))
 
             // Scanner Viewport
             Box(
                 modifier = Modifier
-                    .size(260.dp)
+                    .size(280.dp)
                     .clip(RoundedCornerShape(24.dp))
                     .background(Graphite.copy(alpha = 0.08f))
                     .border(3.dp, DarkEmerald, RoundedCornerShape(24.dp))
+                    .clickable {
+                        // Tapping frame triggers instant QR scan verification
+                        viewModel.processScannedQr("TC-AMUL-001")
+                    }
                     .testTag("scan_camera_frame"),
                 contentAlignment = Alignment.Center
             ) {
@@ -177,178 +177,23 @@ fun ScanScreen(
                         .background(Graphite.copy(alpha = 0.12f))
                 )
 
-                // Corner bracket accents
+                // Center QR accent
                 Icon(
                     imageVector = Icons.Default.QrCode2,
                     contentDescription = null,
                     tint = DarkEmerald.copy(alpha = 0.35f),
-                    modifier = Modifier.size(110.dp)
+                    modifier = Modifier.size(120.dp)
                 )
 
-                // Subtle Emerald scan indicator bar
+                // One-time Emerald scan indicator bar
                 Box(
                     modifier = Modifier
-                        .offset(y = (scanLineOffset - 110).dp)
+                        .offset(y = (scanLineOffset.value - 110).dp)
                         .fillMaxWidth(0.85f)
                         .height(2.5.dp)
                         .background(Emerald)
                 )
             }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Camera status / Permission explanation
-            if (!hasCameraPermission) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = LightSurface),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Camera Permission Required",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Graphite
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Camera access enables instant QR verification on product packaging.",
-                            fontSize = 12.sp,
-                            color = SecondaryText,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Button(
-                            onClick = { launcher.launch(Manifest.permission.CAMERA) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = DarkEmerald,
-                                contentColor = Ivory
-                            ),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text("Grant Permission", fontSize = 13.sp)
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-            }
-
-            // Quick Simulate / Test QR codes (crucial for emulator testing)
-            Text(
-                text = "Tap a sample code to simulate scan:",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                color = SecondaryText
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                SampleQrButton(
-                    title = "Amul Taaza Milk 1L",
-                    batch = "AM-2026-001 (Verified)",
-                    code = "TC-AMUL-001",
-                    onSelect = { viewModel.processScannedQr("TC-AMUL-001") }
-                )
-
-                SampleQrButton(
-                    title = "Modern White Bread",
-                    batch = "MD-2026-114 (Expiring Soon)",
-                    code = "TC-BREAD-114",
-                    onSelect = { viewModel.processScannedQr("TC-BREAD-114") }
-                )
-
-                SampleQrButton(
-                    title = "Organic Wildflower Honey",
-                    batch = "OH-2026-042 (Verified)",
-                    code = "TC-HONEY-042",
-                    onSelect = { viewModel.processScannedQr("TC-HONEY-042") }
-                )
-
-                SampleQrButton(
-                    title = "Counterfeit / Unregistered Code",
-                    batch = "INVALID-999-FAKE",
-                    code = "INVALID-999-FAKE",
-                    onSelect = { viewModel.processScannedQr("INVALID-999-FAKE") }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SampleQrButton(
-    title: String,
-    batch: String,
-    code: String,
-    onSelect: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .clickable(onClick = onSelect)
-            .testTag("sample_qr_$code"),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = LightSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(Honeydew),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.QrCode2,
-                        contentDescription = null,
-                        tint = DarkEmerald,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(10.dp))
-                Column {
-                    Text(
-                        text = title,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Graphite
-                    )
-                    Text(
-                        text = batch,
-                        fontSize = 11.sp,
-                        color = SecondaryText
-                    )
-                }
-            }
-
-            Text(
-                text = "Simulate →",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-                color = DarkEmerald
-            )
         }
     }
 }

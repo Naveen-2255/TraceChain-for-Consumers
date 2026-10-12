@@ -8,6 +8,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -149,28 +150,33 @@ fun AppBottomNavigation(
                 drawPath(path = path, color = DarkEmerald)
             }
     ) {
-        val infiniteTransition = rememberInfiniteTransition(label = "nav_animations")
+        // 1. Scan animation: STRICTLY ONE-TIME up-and-down sweep when Scan is selected
+        val isScanSelected = currentTab == NavTab.SCAN
+        val scanLaserOffset = remember { Animatable(0f) }
+        val scanLaserAlpha = remember { Animatable(0f) }
+        val scanBounce = remember { Animatable(0f) }
 
-        // 1. Scan animation: Up-and-down laser scanning beam
-        val scanLaserOffset by infiniteTransition.animateFloat(
-            initialValue = -12f,
-            targetValue = 12f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 700, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "scan_laser_anim"
-        )
+        LaunchedEffect(isScanSelected) {
+            if (isScanSelected) {
+                scanLaserAlpha.snapTo(1f)
+                scanLaserOffset.snapTo(-12f)
+                scanBounce.snapTo(0f)
 
-        val scanBounce by infiniteTransition.animateFloat(
-            initialValue = -4f,
-            targetValue = 4f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 700, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "scan_bounce_anim"
-        )
+                // One-time sweep: down and back up
+                scanBounce.animateTo(-4f, tween(350, easing = FastOutSlowInEasing))
+                scanLaserOffset.animateTo(12f, tween(350, easing = FastOutSlowInEasing))
+
+                scanBounce.animateTo(0f, tween(350, easing = FastOutSlowInEasing))
+                scanLaserOffset.animateTo(-12f, tween(350, easing = FastOutSlowInEasing))
+
+                // Fade out laser after single sweep completes
+                scanLaserAlpha.animateTo(0f, tween(200))
+            } else {
+                scanLaserAlpha.snapTo(0f)
+                scanLaserOffset.snapTo(0f)
+                scanBounce.snapTo(0f)
+            }
+        }
 
         // 2. History animation: EXACTLY ONE-TIME 360-degree rotation of ONLY the clock
         val isHistorySelected = currentTab == NavTab.HISTORY
@@ -198,8 +204,7 @@ fun AppBottomNavigation(
                 .height(98.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // TAB 1: SCAN (Up-and-down laser scanning animation, NO circle transfer)
-            val isScanSelected = currentTab == NavTab.SCAN
+            // TAB 1: SCAN (One-time up-and-down laser scanning animation, NO circle transfer)
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -225,17 +230,17 @@ fun AppBottomNavigation(
                         tint = if (isScanSelected) MintActivePill else FloralWhite,
                         modifier = Modifier
                             .size(28.dp)
-                            .offset(y = if (isScanSelected) scanBounce.dp else 0.dp)
+                            .offset(y = scanBounce.value.dp)
                     )
 
-                    // Visible up-and-down scanning laser beam
-                    if (isScanSelected) {
+                    // One-time up-and-down scanning laser beam
+                    if (scanLaserAlpha.value > 0.05f) {
                         Box(
                             modifier = Modifier
-                                .offset(y = scanLaserOffset.dp)
+                                .offset(y = scanLaserOffset.value.dp)
                                 .size(width = 28.dp, height = 2.5.dp)
                                 .clip(CircleShape)
-                                .background(MintActivePill)
+                                .background(MintActivePill.copy(alpha = scanLaserAlpha.value))
                         )
                     }
                 }
@@ -249,7 +254,7 @@ fun AppBottomNavigation(
                 )
             }
 
-            // TAB 2: HOME (Fixed concentric cradle with elevated circular button)
+            // TAB 2: HOME (Fixed concentric cradle with elevated circular button that NEVER disappears)
             val isHomeSelected = currentTab == NavTab.HOME
             Box(
                 modifier = Modifier
@@ -269,13 +274,20 @@ fun AppBottomNavigation(
                         .offset(y = 6.dp)
                         .size(60.dp)
                         .shadow(
-                            elevation = if (isHomeSelected) 8.dp else 2.dp,
+                            elevation = if (isHomeSelected) 8.dp else 4.dp,
                             shape = CircleShape,
-                            ambientColor = DarkEmerald.copy(alpha = 0.45f),
-                            spotColor = DarkEmerald.copy(alpha = 0.45f)
+                            ambientColor = DarkEmerald.copy(alpha = 0.5f),
+                            spotColor = DarkEmerald.copy(alpha = 0.5f)
                         )
                         .clip(CircleShape)
-                        .background(if (isHomeSelected) MintActivePill else Color(0x35F6F2EA)),
+                        .background(if (isHomeSelected) MintActivePill else DarkEmerald)
+                        .then(
+                            if (!isHomeSelected) {
+                                Modifier.border(1.5.dp, FloralWhite.copy(alpha = 0.6f), CircleShape)
+                            } else {
+                                Modifier
+                            }
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(

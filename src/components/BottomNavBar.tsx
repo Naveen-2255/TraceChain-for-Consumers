@@ -30,39 +30,27 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   const historyRotateAnim = useRef(new Animated.Value(0)).current;
   const homeScaleAnim = useRef(new Animated.Value(1)).current;
 
-  // 1. Scan animation: Up-and-down laser scanning beam
+  // 1. Scan animation: STRICTLY ONE-TIME up-and-down laser scanning sweep
   useEffect(() => {
-    let scanLoop: Animated.CompositeAnimation | null = null;
     if (currentTab === 'scan') {
       scanUpDownAnim.setValue(0);
-      scanLoop = Animated.loop(
-        Animated.sequence([
-          Animated.timing(scanUpDownAnim, {
-            toValue: 1,
-            duration: 750,
-            easing: Easing.inOut(Easing.quad),
-            useNativeDriver: true,
-          }),
-          Animated.timing(scanUpDownAnim, {
-            toValue: 0,
-            duration: 750,
-            easing: Easing.inOut(Easing.quad),
-            useNativeDriver: true,
-          }),
-        ])
-      );
-      scanLoop.start();
+      Animated.sequence([
+        Animated.timing(scanUpDownAnim, {
+          toValue: 1,
+          duration: 400,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(scanUpDownAnim, {
+          toValue: 0,
+          duration: 400,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]).start();
     } else {
-      Animated.timing(scanUpDownAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
+      scanUpDownAnim.setValue(0);
     }
-
-    return () => {
-      if (scanLoop) scanLoop.stop();
-    };
   }, [currentTab]);
 
   // 2. History animation: Rotates ONE TIME (360 degrees) when selected
@@ -314,11 +302,16 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: 'rgba(246, 242, 234, 0.22)',
+    backgroundColor: Colors.navBar,
     borderWidth: 1.5,
-    borderColor: 'rgba(234, 221, 208, 0.35)',
+    borderColor: 'rgba(246, 242, 234, 0.6)',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 4,
   },
   activeCenterCircle: {
     backgroundColor: Colors.activeCircle,
