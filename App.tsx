@@ -10,10 +10,7 @@ import { Product } from './src/data/productData';
 import { Colors } from './src/theme/colors';
 
 export default function App() {
-  const [user, setUser] = useState<{ name: string; email: string } | null>({
-    name: 'Naveen Joseph',
-    email: 'naveenjosephvadakkel@gmail.com',
-  });
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 

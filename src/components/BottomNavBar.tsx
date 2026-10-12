@@ -149,7 +149,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
       </Svg>
 
       <View style={styles.row}>
-        {/* TAB 1: SCAN (Up-and-down laser scanning animation, NO circle transfer) */}
+        {/* TAB 1: SCAN (Up-and-down laser scanning animation, filled inside with active home color) */}
         <TouchableOpacity
           style={styles.tabItem}
           activeOpacity={0.8}
@@ -163,11 +163,32 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
                 justifyContent: 'center',
               }}
             >
-              <MaterialCommunityIcons
-                name="qrcode-scan"
-                size={27}
-                color={isScanSelected ? Colors.activeCircle : Colors.inactiveIcon}
-              />
+              {isScanSelected ? (
+                // Filled inside the icon with active home color (Colors.activeCircle) and Dark Coffee details
+                <View
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: 6,
+                    backgroundColor: Colors.activeCircle,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="qrcode-scan"
+                    size={20}
+                    color={Colors.activeIcon}
+                  />
+                </View>
+              ) : (
+                // Unselected: Outline scan in Floral White
+                <MaterialCommunityIcons
+                  name="qrcode-scan"
+                  size={26}
+                  color={Colors.inactiveIcon}
+                />
+              )}
 
               {/* Up-and-down laser scanning beam */}
               {isScanSelected && (
@@ -209,42 +230,49 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           </Text>
         </TouchableOpacity>
 
-        {/* TAB 3: HISTORY (One-shot 360-degree rotation when selected, NO circle transfer) */}
+        {/* TAB 3: HISTORY (Clock ONLY, rotates 360° ONE TIME, filled inside with active home color) */}
         <TouchableOpacity
           style={styles.tabItem}
           activeOpacity={0.8}
           onPress={() => onTabSelect('history')}
         >
           <View style={styles.sideIconWrap}>
-            <View style={{ width: 28, height: 28, position: 'relative' }}>
-              {/* Stationary Document */}
-              <MaterialCommunityIcons
-                name="file-document-outline"
-                size={26}
-                color={isHistorySelected ? Colors.activeCircle : Colors.inactiveIcon}
-                style={{ position: 'absolute', left: 0, top: 0 }}
-              />
-
-              {/* Clock in bottom-right corner rotates 360° ONE TIME */}
-              <Animated.View
-                style={{
-                  position: 'absolute',
-                  right: -2,
-                  bottom: -2,
-                  width: 14,
-                  height: 14,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transform: [{ rotate: isHistorySelected ? historyRotation : '0deg' }],
-                }}
-              >
+            <Animated.View
+              style={{
+                width: 28,
+                height: 28,
+                alignItems: 'center',
+                justifyContent: 'center',
+                transform: [{ rotate: isHistorySelected ? historyRotation : '0deg' }],
+              }}
+            >
+              {isHistorySelected ? (
+                // Selected: Clock only, filled inside with active home color (#EADDD0) and dark coffee hands (#3E2B22)
+                <View
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: 13,
+                    backgroundColor: Colors.activeCircle,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="clock"
+                    size={22}
+                    color={Colors.activeIcon}
+                  />
+                </View>
+              ) : (
+                // Unselected: Clean outline clock in floral white
                 <MaterialCommunityIcons
                   name="clock-outline"
-                  size={14}
-                  color={isHistorySelected ? Colors.activeCircle : Colors.inactiveIcon}
+                  size={26}
+                  color={Colors.inactiveIcon}
                 />
-              </Animated.View>
-            </View>
+              )}
+            </Animated.View>
           </View>
           <Text style={[styles.label, isHistorySelected && styles.activeLabel]}>
             History

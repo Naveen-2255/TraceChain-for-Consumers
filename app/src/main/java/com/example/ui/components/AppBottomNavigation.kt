@@ -7,6 +7,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Icon
@@ -35,9 +37,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
@@ -204,7 +209,7 @@ fun AppBottomNavigation(
                 .height(98.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // TAB 1: SCAN (One-time up-and-down laser scanning animation, NO circle transfer)
+            // TAB 1: SCAN (One-time up-and-down laser scanning animation, color filled inside icon)
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -224,24 +229,47 @@ fun AppBottomNavigation(
                         .size(36.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_nav_scan),
-                        contentDescription = "Scan",
-                        tint = if (isScanSelected) MintActivePill else FloralWhite,
+                    Box(
                         modifier = Modifier
-                            .size(28.dp)
-                            .offset(y = scanBounce.value.dp)
-                    )
+                            .offset(y = scanBounce.value.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (isScanSelected) {
+                            // Filled inside the icon with active home color (MintActivePill)
+                            Box(
+                                modifier = Modifier
+                                    .size(26.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(MintActivePill),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_nav_scan),
+                                    contentDescription = "Scan",
+                                    tint = DarkCoffee,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        } else {
+                            // Unselected: hollow outline scan in FloralWhite
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_nav_scan),
+                                contentDescription = "Scan",
+                                tint = FloralWhite,
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
 
-                    // One-time up-and-down scanning laser beam
-                    if (scanLaserAlpha.value > 0.05f) {
-                        Box(
-                            modifier = Modifier
-                                .offset(y = scanLaserOffset.value.dp)
-                                .size(width = 28.dp, height = 2.5.dp)
-                                .clip(CircleShape)
-                                .background(MintActivePill.copy(alpha = scanLaserAlpha.value))
-                        )
+                        // One-time up-and-down scanning laser beam
+                        if (scanLaserAlpha.value > 0.05f) {
+                            Box(
+                                modifier = Modifier
+                                    .offset(y = scanLaserOffset.value.dp)
+                                    .size(width = 28.dp, height = 2.5.dp)
+                                    .clip(CircleShape)
+                                    .background(MintActivePill.copy(alpha = scanLaserAlpha.value))
+                            )
+                        }
                     }
                 }
 
@@ -307,7 +335,7 @@ fun AppBottomNavigation(
                 )
             }
 
-            // TAB 3: HISTORY (Stationary document, ONLY the clock in corner rotates 360° ONE TIME)
+            // TAB 3: HISTORY (Clock ONLY, rotates 360° ONE TIME, color filled inside icon)
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -327,30 +355,80 @@ fun AppBottomNavigation(
                         .size(36.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier.size(28.dp)
+                    Canvas(
+                        modifier = Modifier
+                            .size(26.dp)
+                            .rotate(historyClockRotation.value)
                     ) {
-                        // 1. Stationary Document outline (Never rotates)
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_nav_history_doc),
-                            contentDescription = "History",
-                            tint = if (isHistorySelected) MintActivePill else FloralWhite,
-                            modifier = Modifier.fillMaxSize()
-                        )
+                        val radius = size.minDimension / 2f
+                        val centerOffset = Offset(size.width / 2f, size.height / 2f)
 
-                        // 2. Clock in bottom right corner (Rotates 360 degrees ONE TIME when selected)
-                        Box(
-                            modifier = Modifier
-                                .offset(x = 13.dp, y = 13.dp)
-                                .size(14.dp)
-                                .rotate(historyClockRotation.value),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_nav_history_clock),
-                                contentDescription = null,
-                                tint = if (isHistorySelected) MintActivePill else FloralWhite,
-                                modifier = Modifier.fillMaxSize()
+                        if (isHistorySelected) {
+                            // Filled inside the icon with active home color (MintActivePill)
+                            drawCircle(
+                                color = MintActivePill,
+                                radius = radius,
+                                center = centerOffset
+                            )
+                            // Outer ring
+                            drawCircle(
+                                color = DarkCoffee,
+                                radius = radius - 1.dp.toPx(),
+                                center = centerOffset,
+                                style = Stroke(width = 1.8.dp.toPx())
+                            )
+                            // Clock hands (DarkCoffee)
+                            // Hour hand pointing to 12
+                            drawLine(
+                                color = DarkCoffee,
+                                start = centerOffset,
+                                end = Offset(centerOffset.x, centerOffset.y - (radius * 0.55f)),
+                                strokeWidth = 2.dp.toPx(),
+                                cap = StrokeCap.Round
+                            )
+                            // Minute hand pointing to 3:00
+                            drawLine(
+                                color = DarkCoffee,
+                                start = centerOffset,
+                                end = Offset(centerOffset.x + (radius * 0.5f), centerOffset.y),
+                                strokeWidth = 2.dp.toPx(),
+                                cap = StrokeCap.Round
+                            )
+                            // Center pivot
+                            drawCircle(
+                                color = DarkCoffee,
+                                radius = 2.dp.toPx(),
+                                center = centerOffset
+                            )
+                        } else {
+                            // Unselected: hollow outline clock in FloralWhite
+                            drawCircle(
+                                color = FloralWhite,
+                                radius = radius - 1.dp.toPx(),
+                                center = centerOffset,
+                                style = Stroke(width = 1.8.dp.toPx())
+                            )
+                            // Hour hand
+                            drawLine(
+                                color = FloralWhite,
+                                start = centerOffset,
+                                end = Offset(centerOffset.x, centerOffset.y - (radius * 0.55f)),
+                                strokeWidth = 1.8.dp.toPx(),
+                                cap = StrokeCap.Round
+                            )
+                            // Minute hand
+                            drawLine(
+                                color = FloralWhite,
+                                start = centerOffset,
+                                end = Offset(centerOffset.x + (radius * 0.5f), centerOffset.y),
+                                strokeWidth = 1.8.dp.toPx(),
+                                cap = StrokeCap.Round
+                            )
+                            // Center pivot
+                            drawCircle(
+                                color = FloralWhite,
+                                radius = 1.8.dp.toPx(),
+                                center = centerOffset
                             )
                         }
                     }

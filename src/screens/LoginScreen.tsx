@@ -17,8 +17,8 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
-  const [email, setEmail] = useState('naveenjosephvadakkel@gmail.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -29,9 +29,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       return;
     }
     setErrorMessage('');
+    const enteredEmail = email.trim();
+    const displayName = enteredEmail.includes('@')
+      ? enteredEmail.split('@')[0]
+      : 'User';
     onLoginSuccess({
-      name: 'Naveen Joseph',
-      email: email.trim(),
+      name: displayName,
+      email: enteredEmail,
     });
   };
 
